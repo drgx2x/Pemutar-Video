@@ -1,15 +1,20 @@
 package com.example.pemutarvideo
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -19,7 +24,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private lateinit var btnMenu: Button
+    private lateinit var btnFloatingChat: Button
     private var sleepTimer: CountDownTimer? = null
+    private var currentUrl: String = ""
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,14 +37,32 @@ class MainActivity : AppCompatActivity() {
 
         webView = findViewById(R.id.webView)
         btnMenu = findViewById(R.id.btnMenu)
+        btnFloatingChat = findViewById(R.id.btnFloatingChat)
 
         val webSettings: WebSettings = webView.settings
         webSettings.javaScriptEnabled = true
         webSettings.domStorageEnabled = true
         webSettings.mediaPlaybackRequiresUserGesture = false
         webSettings.loadsImagesAutomatically = true
+        webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
 
-        webView.webViewClient = WebViewClient()
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                if (url != null) {
+                    currentUrl = url
+                    checkAndShowFloatingChat(url)
+                }
+            }
+
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                if (url != null) {
+                    currentUrl = url
+                    checkAndShowFloatingChat(url)
+                }
+                return false
+            }
+        }
         
         webView.webChromeClient = object : WebChromeClient() {
             private var customView: View? = null
@@ -66,7 +91,11 @@ class MainActivity : AppCompatActivity() {
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 )
 
+                // Sembunyikan topbar dan webView utama, tampilkan customView (fullscreen video) di root layout
+                findViewById<View>(R.id.layoutTopBar).visibility = View.GONE
+                btnFloatingChat.visibility = View.GONE
                 webView.visibility = View.GONE
+
                 val decorView = window.decorView as FrameLayout
                 decorView.addView(customView, FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT,
@@ -83,7 +112,10 @@ class MainActivity : AppCompatActivity() {
                 window.decorView.systemUiVisibility = originalSystemUiVisibility
                 requestedOrientation = originalOrientation
 
+                findViewById<View>(R.id.layoutTopBar).visibility = View.VISIBLE
                 webView.visibility = View.VISIBLE
+                checkAndShowFloatingChat(currentUrl)
+
                 customViewCallback?.onCustomViewHidden()
                 customViewCallback = null
             }
@@ -93,18 +125,29 @@ class MainActivity : AppCompatActivity() {
             showPopupMenu(view)
         }
 
+        btnFloatingChat.setOnClickListener {
+            openLiveChatPopupFromUrl(currentUrl)
+        }
+
         // Default buka Beranda YouTube
         loadYoutubeHome()
+    }
+
+    private fun checkAndShowFloatingChat(url: String) {
+        // Cek apakah URL adalah halaman tonton YouTube (mengandung /watch?v= atau live)
+        if (url.contains("youtube.com/watch") || url.contains("youtu.be/")) {
+            btnFloatingChat.visibility = View.VISIBLE
+        } else {
+            btnFloatingChat.visibility = View.GONE
+        }
     }
 
     private fun showPopupMenu(view: View) {
         val popup = PopupMenu(this, view)
         popup.menu.add(0, 1, 0, "YouTube")
         popup.menu.add(0, 2, 1, "Twitch")
-        popup.menu.add(0, 3, 2, "Sleep Timer (15 Min)")
-        popup.menu.add(0, 4, 3, "Sleep Timer (30 Min)")
-        popup.menu.add(0, 5, 4, "Sleep Timer (60 Min)")
-        popup.menu.add(0, 6, 5, "Cancel Sleep Timer")
+        popup.menu.add(0, 3, 2, "Sleep Timer")
+        popup.menu.add(0, 4, 3, "Cancel Sleep Timer")
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -117,18 +160,10 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 3 -> {
-                    startSleepTimer(15 * 60 * 1000L, "15 Menit")
+                    showSleepTimerOptionsDialog()
                     true
                 }
                 4 -> {
-                    startSleepTimer(30 * 60 * 1000L, "30 Menit")
-                    true
-                }
-                5 -> {
-                    startSleepTimer(60 * 60 * 1000L, "60 Menit")
-                    true
-                }
-                6 -> {
                     cancelSleepTimer()
                     true
                 }
@@ -136,6 +171,45 @@ class MainActivity : AppCompatActivity() {
             }
         }
         popup.show()
+    }
+
+    private fun showSleepTimerOptionsDialog() {
+        val options = arrayOf("15 Menit", "30 Menit", "60 Menit", "Manual (Custom Menit)")
+        AlertDialog.Builder(this)
+            .setTitle("Pilih Sleep Timer")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> startSleepTimer(15 * 60 * 1000L, "15 Menit")
+                    1 -> startSleepTimer(30 * 60 * 1000L, "30 Menit")
+                    2 -> startSleepTimer(60 * 60 * 1000L, "60 Menit")
+                    3 -> showManualSleepTimerDialog()
+                }
+            }
+            .show()
+    }
+
+    private fun showManualSleepTimerDialog() {
+        val input = EditText(this)
+        input.hint = "Masukkan jumlah menit"
+        input.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+
+        AlertDialog.Builder(this)
+            .setTitle("Sleep Timer Manual")
+            .setMessage("Masukkan durasi dalam menit:")
+            .setView(input)
+            .setPositiveButton("Mulai") { _, _ ->
+                val minutesStr = input.text.toString()
+                if (minutesStr.isNotEmpty()) {
+                    val minutes = minutesStr.toLongOrNull()
+                    if (minutes != null && minutes > 0) {
+                        startSleepTimer(minutes * 60 * 1000L, "$minutes Menit")
+                    } else {
+                        Toast.makeText(this, "Angka tidak valid", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     private fun startSleepTimer(durationMillis: Long, label: String) {
@@ -156,6 +230,50 @@ class MainActivity : AppCompatActivity() {
         sleepTimer?.cancel()
         sleepTimer = null
         Toast.makeText(this, "Sleep timer dibatalkan", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun openLiveChatPopupFromUrl(url: String) {
+        val videoId = extractVideoId(url)
+        if (videoId != null) {
+            val chatUrl = "https://www.youtube.com/live_chat?v=$videoId&embed_domain=${Uri.parse(url).host ?: "www.youtube.com"}"
+            
+            // Buat dialog WebView untuk Pop-up Live Chat
+            val dialogWebView = WebView(this)
+            dialogWebView.settings.javaScriptEnabled = true
+            dialogWebView.settings.domStorageEnabled = true
+            dialogWebView.webViewClient = WebViewClient()
+            dialogWebView.loadUrl(chatUrl)
+
+            AlertDialog.Builder(this)
+                .setTitle("YouTube Live Chat (Pop-up)")
+                .setView(dialogWebView)
+                .setPositiveButton("Tutup", null)
+                .show()
+        } else {
+            Toast.makeText(this, "Tidak dapat mendeteksi Video ID dari URL ini", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun extractVideoId(url: String): String? {
+        // Cek URL standar watch?v=ID atau youtu.be/ID atau live/ID
+        return try {
+            val uri = Uri.parse(url)
+            when {
+                uri.host?.contains("youtube.com") == true -> {
+                    if (uri.path?.startsWith("/live/") == true) {
+                        uri.lastPathSegment
+                    } else {
+                        uri.getQueryParameter("v")
+                    }
+                }
+                uri.host?.contains("youtu.be") == true -> {
+                    uri.lastPathSegment
+                }
+                else -> null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private fun loadYoutubeHome() {

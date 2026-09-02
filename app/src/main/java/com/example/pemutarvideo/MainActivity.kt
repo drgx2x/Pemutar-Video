@@ -307,8 +307,8 @@ class MainActivity : AppCompatActivity() {
         if (videoId != null) {
             val liveChatUrl = "https://www.youtube.com/live_chat?v=$videoId&embed_domain=youtube.com"
             
-            val dialogView = layoutInflater.inflate(R.layout.activity_player, null)
-            val chatWebView = dialogView.findViewById<WebView>(R.id.playerWebView)
+            val dialogView = layoutInflater.inflate(R.layout.dialog_chat, null)
+            val chatWebView = dialogView.findViewById<WebView>(R.id.chatWebView)
             
             chatWebView.settings.javaScriptEnabled = true
             chatWebView.settings.domStorageEnabled = true

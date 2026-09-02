@@ -6,7 +6,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="Pemutar Video"
+        android:label="@string/app_name"
         android:icon="@drawable/ic_launcher_background"
         android:roundIcon="@drawable/ic_launcher_background"
         android:supportsRtl="true"

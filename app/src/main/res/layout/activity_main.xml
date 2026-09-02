@@ -11,15 +11,21 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="#1E1E1E"
-        android:padding="8dp"
+        android:padding="4dp"
         android:gravity="end">
 
         <Button
             android:id="@+id/btnMenu"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="32dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
             android:text="⋮ Menu"
-            android:textSize="14sp" />
+            android:textSize="12sp" />
     </LinearLayout>
 
     <!-- Tombol Melayang untuk Buka Pop-up Live Chat YouTube -->

@@ -80,13 +80,12 @@ class MainActivity : AppCompatActivity() {
 
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 
+                // JANGAN sembunyikan navigasi secara total agar tombol Back/Home sistem atau menu pop-up masih bisa dijangkau jika disentuh/di-swipe,
+                // atau gunakan flag sistem standar agar video fullscreen tetap optimal tapi tidak mengunci total interaksi window.
                 window.decorView.systemUiVisibility = (
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    View.SYSTEM_UI_FLAG_IMMERSIVE
                     or View.SYSTEM_UI_FLAG_FULLSCREEN
                     or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 )
 
                 // Sembunyikan topbar dan webView utama, tampilkan customView (fullscreen video) di root layout
@@ -248,10 +247,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadYoutubeHome() {
         webView.loadUrl("https://www.youtube.com")
+        btnMenu.visibility = View.VISIBLE
     }
 
     private fun loadTwitchHome() {
         webView.loadUrl("https://www.twitch.tv")
+        btnMenu.visibility = View.VISIBLE
     }
 
     override fun onBackPressed() {

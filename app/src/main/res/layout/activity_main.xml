@@ -22,13 +22,6 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- WebView untuk Tampilan Home Platform -->
-    <WebView
-        android:id="@+id/webView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/layoutTopBar" />
-
     <!-- Tombol Melayang untuk Buka Pop-up Live Chat YouTube -->
     <Button
         android:id="@+id/btnFloatingChat"
@@ -39,7 +32,15 @@
         android:layout_margin="24dp"
         android:background="@drawable/ic_chat"
         android:backgroundTint="#FF0000"
+        android:elevation="10dp"
         android:visibility="gone"
         android:contentDescription="Live Chat Pop-up" />
+
+    <!-- WebView untuk Tampilan Home Platform -->
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layoutTopBar" />
 
 </RelativeLayout>

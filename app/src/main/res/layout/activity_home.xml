@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#121212"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PILIH PLATFORM STREAMING"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" />
+
+    <Button
+        android:id="@+id/btnTwitchHome"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Twitch (Stream + Chat)"
+        android:textSize="16sp"
+        android:backgroundTint="#9146FF"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnYoutubeHome"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="YouTube (Stream + Live Chat)"
+        android:textSize="16sp"
+        android:backgroundTint="#FF0000"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>

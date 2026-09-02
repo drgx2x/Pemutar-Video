@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private lateinit var btnMenu: Button
-    private lateinit var btnFloatingChat: Button
     private var sleepTimer: CountDownTimer? = null
     private var currentUrl: String = ""
 
@@ -37,7 +36,6 @@ class MainActivity : AppCompatActivity() {
 
         webView = findViewById(R.id.webView)
         btnMenu = findViewById(R.id.btnMenu)
-        btnFloatingChat = findViewById(R.id.btnFloatingChat)
 
         val webSettings: WebSettings = webView.settings
         webSettings.javaScriptEnabled = true
@@ -51,7 +49,6 @@ class MainActivity : AppCompatActivity() {
                 super.onPageFinished(view, url)
                 if (url != null) {
                     currentUrl = url
-                    checkAndShowFloatingChat(url)
                     injectSponsorBlock()
                     injectAdBlock(url)
                 }
@@ -60,7 +57,6 @@ class MainActivity : AppCompatActivity() {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 if (url != null) {
                     currentUrl = url
-                    checkAndShowFloatingChat(url)
                     injectSponsorBlock()
                     injectAdBlock(url)
                 }
@@ -97,7 +93,6 @@ class MainActivity : AppCompatActivity() {
 
                 // Sembunyikan topbar dan webView utama, tampilkan customView (fullscreen video) di root layout
                 findViewById<View>(R.id.layoutTopBar).visibility = View.GONE
-                btnFloatingChat.visibility = View.GONE
                 webView.visibility = View.GONE
 
                 val decorView = window.decorView as FrameLayout
@@ -118,7 +113,6 @@ class MainActivity : AppCompatActivity() {
 
                 findViewById<View>(R.id.layoutTopBar).visibility = View.VISIBLE
                 webView.visibility = View.VISIBLE
-                checkAndShowFloatingChat(currentUrl)
 
                 customViewCallback?.onCustomViewHidden()
                 customViewCallback = null
@@ -127,10 +121,6 @@ class MainActivity : AppCompatActivity() {
 
         btnMenu.setOnClickListener { view ->
             showPopupMenu(view)
-        }
-
-        btnFloatingChat.setOnClickListener {
-            openLiveChatPopupFromUrl(currentUrl)
         }
 
         // Default buka Beranda YouTube
@@ -201,41 +191,50 @@ class MainActivity : AppCompatActivity() {
         val jsCode = """
             (function() {
                 const videoId = '$videoId';
-                if (window.__sponsorBlockVideoId === videoId) return;
-                window.__sponsorBlockVideoId = videoId;
-                window.__sponsorBlockSegments = [];
+                if (window.__sponsorBlockVideoId !== videoId) {
+                    window.__sponsorBlockVideoId = videoId;
+                    window.__sponsorBlockSegments = [];
 
-                fetch('https://sponsor.ajay.app/api/skipSegments?videoID=' + videoId + '&categoryList=["sponsor","selfpromo","interaction","intro","outro"]')
-                    .then(res => {
-                        if (!res.ok) throw new Error("HTTP " + res.status);
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (Array.isArray(data)) {
-                            window.__sponsorBlockSegments = data.map(item => ({
-                                start: item.segment[0],
-                                end: item.segment[1]
-                            }));
-                            console.log("[SponsorBlock] Loaded segments:", window.__sponsorBlockSegments);
-                        }
-                    }).catch(e => console.error("SponsorBlock fetch error:", e));
-
-                if (!window.__sponsorBlockIntervalStarted) {
-                    window.__sponsorBlockIntervalStarted = true;
-                    setInterval(() => {
-                        const video = document.querySelector('video');
-                        const segments = window.__sponsorBlockSegments;
-                        if (!video || !segments || segments.length === 0) return;
-                        
-                        const currentTime = video.currentTime;
-                        for (let seg of segments) {
-                            if (currentTime >= seg.start && currentTime < seg.end - 0.5) {
-                                video.currentTime = seg.end;
-                                console.log("[SponsorBlock] Skipped segment from " + seg.start + " to " + seg.end);
-                                break;
+                    fetch('https://sponsor.ajay.app/api/skipSegments?videoID=' + videoId + '&categoryList=["sponsor","selfpromo","interaction","intro","outro"]')
+                        .then(res => {
+                            if (!res.ok) throw new Error("HTTP " + res.status);
+                            return res.json();
+                        })
+                        .then(data => {
+                            if (Array.isArray(data)) {
+                                window.__sponsorBlockSegments = data.map(item => ({
+                                    start: item.segment[0],
+                                    end: item.segment[1]
+                                }));
+                                console.log("[SponsorBlock] Loaded segments:", window.__sponsorBlockSegments);
                             }
+                        }).catch(e => console.error("SponsorBlock fetch error:", e));
+                }
+
+                if (!window.__sponsorBlockObserverStarted) {
+                    window.__sponsorBlockObserverStarted = true;
+                    
+                    const observer = new MutationObserver(() => {
+                        const video = document.querySelector('video');
+                        if (video && !video.__sponsorBlockListenerAttached) {
+                            video.__sponsorBlockListenerAttached = true;
+                            video.addEventListener('timeupdate', () => {
+                                const segments = window.__sponsorBlockSegments;
+                                if (!segments || segments.length === 0) return;
+                                
+                                const currentTime = video.currentTime;
+                                for (let seg of segments) {
+                                    if (currentTime >= seg.start && currentTime < seg.end - 0.5) {
+                                        video.currentTime = seg.end;
+                                        console.log("[SponsorBlock] Skipped segment from " + seg.start + " to " + seg.end);
+                                        break;
+                                    }
+                                }
+                            });
                         }
-                    }, 500);
+                    });
+                    
+                    observer.observe(document.body, { childList: true, subtree: true });
                 }
             })();
         """.trimIndent()
@@ -302,30 +301,7 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "Sleep timer dibatalkan", Toast.LENGTH_SHORT).show()
     }
 
-    private fun openLiveChatPopupFromUrl(url: String) {
-        val videoId = extractVideoId(url)
-        if (videoId != null) {
-            val liveChatUrl = "https://www.youtube.com/live_chat?v=$videoId&embed_domain=youtube.com"
-            
-            val dialogView = layoutInflater.inflate(R.layout.dialog_chat, null)
-            val chatWebView = dialogView.findViewById<WebView>(R.id.chatWebView)
-            
-            chatWebView.settings.javaScriptEnabled = true
-            chatWebView.settings.domStorageEnabled = true
-            chatWebView.webViewClient = WebViewClient()
-            chatWebView.loadUrl(liveChatUrl)
 
-            AlertDialog.Builder(this)
-                .setTitle("Live Chat & Komentar")
-                .setView(dialogView)
-                .setPositiveButton("Tutup", null)
-                .show()
-                
-            Toast.makeText(this, "Membuka popup live chat", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Tidak dapat mendeteksi Video ID dari URL ini", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     private fun extractVideoId(url: String): String? {
         // Cek URL standar watch?v=ID atau youtu.be/ID atau live/ID

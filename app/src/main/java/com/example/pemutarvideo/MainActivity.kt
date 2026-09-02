@@ -158,10 +158,6 @@ class MainActivity : AppCompatActivity() {
         popup.show()
     }
 
-
-    }
-
-
     private fun showSleepTimerOptionsDialog() {
         val options = arrayOf("15 Menit", "30 Menit", "60 Menit", "Manual (Custom Menit)")
         AlertDialog.Builder(this)

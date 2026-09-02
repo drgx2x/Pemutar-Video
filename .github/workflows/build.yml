@@ -27,13 +27,12 @@ jobs:
     - name: Build Debug APK
       run: ./gradlew assembleDebug
 
-    - name: Delete previous release
-      uses: dev-drprasad/delete-tag-and-release@v1.0.2
-      with:
-        delete_release: true
-        tag_name: latest
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-      continue-on-error: true
+    - name: Delete previous release and tag using GitHub CLI
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release delete latest -y --repo ${{ github.repository }} || true
+        git push origin --delete latest || true
 
     - name: Release Latest APK
       uses: softprops/action-gh-release@v1

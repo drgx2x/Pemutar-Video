@@ -24,7 +24,7 @@ android {
             resValue "string", "app_name", "Pemutar Video"
         }
         debug {
-            resValue "string", "app_name", "Pemutar Video (Debug)"
+            resValue "string", "app_name", "Pemutar Video"
         }
     }
     compileOptions {

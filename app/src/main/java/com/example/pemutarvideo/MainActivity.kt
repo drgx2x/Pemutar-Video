@@ -88,8 +88,8 @@ class MainActivity : AppCompatActivity() {
                     or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 )
 
-                // Sembunyikan topbar dan webView utama, tampilkan customView (fullscreen video) di root layout
-                findViewById<View>(R.id.layoutTopBar).visibility = View.GONE
+                // Sembunyikan webView utama, tampilkan customView (fullscreen video) di root layout
+                // JANGAN sembunyikan layoutTopBar agar btnMenu tetap bisa diakses
                 webView.visibility = View.GONE
 
                 val decorView = window.decorView as FrameLayout
@@ -97,6 +97,10 @@ class MainActivity : AppCompatActivity() {
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT
                 ))
+                
+                // Pastikan tombol menu tetap di atas video
+                findViewById<View>(R.id.layoutTopBar).bringToFront()
+                
                 customViewCallback = callback
             }
 
@@ -108,8 +112,11 @@ class MainActivity : AppCompatActivity() {
                 window.decorView.systemUiVisibility = originalSystemUiVisibility
                 requestedOrientation = originalOrientation
 
-                findViewById<View>(R.id.layoutTopBar).visibility = View.VISIBLE
                 webView.visibility = View.VISIBLE
+                
+                // Pastikan btnMenu tetap terlihat
+                findViewById<View>(R.id.layoutTopBar).visibility = View.VISIBLE
+                findViewById<View>(R.id.layoutTopBar).bringToFront()
 
                 customViewCallback?.onCustomViewHidden()
                 customViewCallback = null

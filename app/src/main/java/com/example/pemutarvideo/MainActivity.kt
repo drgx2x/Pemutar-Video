@@ -17,6 +17,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var btnYoutube: Button
     private lateinit var btnTwitch: Button
+    private var currentPlatform = "youtube"
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +85,13 @@ class MainActivity : AppCompatActivity() {
                 webView.visibility = View.VISIBLE
                 customViewCallback?.onCustomViewHidden()
                 customViewCallback = null
+
+                // Ketika keluar dari fullscreen, arahkan kembali ke beranda utama platform
+                if (currentPlatform == "twitch") {
+                    webView.loadUrl("https://www.twitch.tv")
+                } else {
+                    webView.loadUrl("https://www.youtube.com")
+                }
             }
         }
 
@@ -100,6 +108,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadYoutubeLive() {
+        currentPlatform = "youtube"
         btnYoutube.alpha = 1.0f
         btnTwitch.alpha = 0.6f
         
@@ -129,10 +138,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadTwitchLive() {
+        currentPlatform = "twitch"
         btnTwitch.alpha = 1.0f
         btnYoutube.alpha = 0.6f
 
-        // Menggunakan iframe embed resmi Twitch yang stabil tanpa error domain policy
         val twitchHtml = """
             <!DOCTYPE html>
             <html>

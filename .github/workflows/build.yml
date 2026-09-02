@@ -25,7 +25,7 @@ jobs:
       uses: gradle/actions/setup-gradle@v3
 
     - name: Build Debug APK
-      run: gradle assembleDebug
+      run: ./gradlew assembleDebug
 
     - name: Delete previous release and tag using GitHub CLI
       env:

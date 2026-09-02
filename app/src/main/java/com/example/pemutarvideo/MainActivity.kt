@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private lateinit var btnMenu: Button
+    private lateinit var tvSleepTimer: android.widget.TextView
     private var sleepTimer: CountDownTimer? = null
     private var currentUrl: String = ""
 
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity() {
 
         webView = findViewById(R.id.webView)
         btnMenu = findViewById(R.id.btnMenu)
+        tvSleepTimer = findViewById(R.id.tvSleepTimer)
 
         val webSettings: WebSettings = webView.settings
         webSettings.javaScriptEnabled = true
@@ -210,6 +212,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startSleepTimer(durationMillis: Long, label: String) {
         sleepTimer?.cancel()
+        tvSleepTimer.visibility = View.VISIBLE
         Toast.makeText(this, "Sleep timer diatur untuk $label", Toast.LENGTH_SHORT).show()
         
         sleepTimer = object : CountDownTimer(durationMillis, 1000) {
@@ -219,8 +222,7 @@ class MainActivity : AppCompatActivity() {
                 val hours = (millisUntilFinished / (1000 * 60 * 60))
                 val timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds)
                 
-                // Tampilkan waktu tersisa di title bar atau status bar (menggunakan title sementara)
-                title = "Sleep Timer: $timeString"
+                tvSleepTimer.text = "Timer: $timeString"
             }
 
             override fun onFinish() {
@@ -233,7 +235,8 @@ class MainActivity : AppCompatActivity() {
     private fun cancelSleepTimer() {
         sleepTimer?.cancel()
         sleepTimer = null
-        title = getString(R.string.app_name)
+        tvSleepTimer.visibility = View.GONE
+        tvSleepTimer.text = ""
         Toast.makeText(this, "Sleep timer dibatalkan", Toast.LENGTH_SHORT).show()
     }
 

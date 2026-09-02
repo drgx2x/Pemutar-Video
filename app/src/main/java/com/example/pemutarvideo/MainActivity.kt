@@ -17,10 +17,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var btnYoutube: Button
     private lateinit var btnTwitch: Button
-    private lateinit var btnLiveMode: Button
-    private lateinit var btnBrowserMode: Button
-    
-    private var isLiveMode = false
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,8 +28,6 @@ class MainActivity : AppCompatActivity() {
         webView = findViewById(R.id.webView)
         btnYoutube = findViewById(R.id.btnYoutube)
         btnTwitch = findViewById(R.id.btnTwitch)
-        btnLiveMode = findViewById(R.id.btnLiveMode)
-        btnBrowserMode = findViewById(R.id.btnBrowserMode)
 
         val webSettings: WebSettings = webView.settings
         webSettings.javaScriptEnabled = true
@@ -94,68 +88,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnYoutube.setOnClickListener {
-            loadContent("youtube")
+            loadYoutubeLive()
         }
 
         btnTwitch.setOnClickListener {
-            loadContent("twitch")
+            loadTwitchLive()
         }
 
-        btnBrowserMode.setOnClickListener {
-            isLiveMode = false
-            updateModeButtons()
-            loadContent(getCurrentPlatform())
-        }
-
-        btnLiveMode.setOnClickListener {
-            isLiveMode = true
-            updateModeButtons()
-            loadContent(getCurrentPlatform())
-        }
-
-        // Default: YouTube Browser Mode
-        updateModeButtons()
-        loadContent("youtube")
+        // Default buka YouTube Live Stream + Chat
+        loadYoutubeLive()
     }
 
-    private var currentPlatform = "youtube"
-
-    private fun getCurrentPlatform(): String {
-        return currentPlatform
-    }
-
-    private fun loadContent(platform: String) {
-        currentPlatform = platform
-        if (platform == "twitch") {
-            btnTwitch.alpha = 1.0f
-            btnYoutube.alpha = 0.6f
-            if (isLiveMode) {
-                loadTwitchLiveEmbed()
-            } else {
-                webView.loadUrl("https://www.twitch.tv")
-            }
-        } else {
-            btnYoutube.alpha = 1.0f
-            btnTwitch.alpha = 0.6f
-            if (isLiveMode) {
-                loadYoutubeLiveEmbed()
-            } else {
-                webView.loadUrl("https://www.youtube.com")
-            }
-        }
-    }
-
-    private fun updateModeButtons() {
-        if (isLiveMode) {
-            btnLiveMode.alpha = 1.0f
-            btnBrowserMode.alpha = 0.6f
-        } else {
-            btnBrowserMode.alpha = 1.0f
-            btnLiveMode.alpha = 0.6f
-        }
-    }
-
-    private fun loadYoutubeLiveEmbed() {
+    private fun loadYoutubeLive() {
+        btnYoutube.alpha = 1.0f
+        btnTwitch.alpha = 0.6f
+        
         val youtubeHtml = """
             <!DOCTYPE html>
             <html>
@@ -181,7 +128,11 @@ class MainActivity : AppCompatActivity() {
         webView.loadDataWithBaseURL("https://www.youtube.com", youtubeHtml, "text/html", "UTF-8", null)
     }
 
-    private fun loadTwitchLiveEmbed() {
+    private fun loadTwitchLive() {
+        btnTwitch.alpha = 1.0f
+        btnYoutube.alpha = 0.6f
+
+        // Menggunakan iframe embed resmi Twitch yang stabil tanpa error domain policy
         val twitchHtml = """
             <!DOCTYPE html>
             <html>
@@ -196,19 +147,19 @@ class MainActivity : AppCompatActivity() {
             </head>
             <body>
                 <div id="stream">
-                    <iframe src="https://player.twitch.tv/?channel=monstercat&parent=localhost&parent=twitch.tv" allowfullscreen></iframe>
+                    <iframe src="https://player.twitch.tv/?channel=monstercat&parent=127.0.0.1" allowfullscreen></iframe>
                 </div>
                 <div id="chat">
-                    <iframe src="https://www.twitch.tv/embed/monstercat/chat?parent=localhost&parent=twitch.tv" height="100%" width="100%"></iframe>
+                    <iframe src="https://www.twitch.tv/embed/monstercat/chat?parent=127.0.0.1" height="100%" width="100%"></iframe>
                 </div>
             </body>
             </html>
         """.trimIndent()
-        webView.loadDataWithBaseURL("https://www.twitch.tv", twitchHtml, "text/html", "UTF-8", null)
+        webView.loadDataWithBaseURL("http://127.0.0.1", twitchHtml, "text/html", "UTF-8", null)
     }
 
     override fun onBackPressed() {
-        if (!isLiveMode && webView.canGoBack()) {
+        if (webView.canGoBack()) {
             webView.goBack()
         } else {
             super.onBackPressed()

@@ -29,15 +29,15 @@
         android:layout_height="match_parent"
         android:layout_below="@id/layoutTopBar" />
 
-    <!-- Tombol Melayang (Floating Action Button / Button biasa bergaya FAB) untuk Buka Pop-up Live Chat YouTube -->
+    <!-- Tombol Melayang untuk Buka Pop-up Live Chat YouTube -->
     <Button
         android:id="@+id/btnFloatingChat"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_margin="24dp"
-        android:background="@android:drawable/ic_menu_chat"
+        android:background="@drawable/ic_chat"
         android:backgroundTint="#FF0000"
         android:visibility="gone"
         android:contentDescription="Live Chat Pop-up" />

@@ -103,11 +103,12 @@ class MainActivity : AppCompatActivity() {
         val popup = PopupMenu(this, view)
         popup.menu.add(0, 1, 0, "YouTube")
         popup.menu.add(0, 2, 1, "Twitch")
-        popup.menu.add(0, 3, 2, "Sleep Timer (15 Min)")
-        popup.menu.add(0, 4, 3, "Sleep Timer (30 Min)")
-        popup.menu.add(0, 5, 4, "Sleep Timer (60 Min)")
-        popup.menu.add(0, 6, 5, "Sleep Timer (Manual)")
-        popup.menu.add(0, 7, 6, "Cancel Sleep Timer")
+        popup.menu.add(0, 3, 2, "Pop-up Live Chat YouTube")
+        popup.menu.add(0, 4, 3, "Sleep Timer (15 Min)")
+        popup.menu.add(0, 5, 4, "Sleep Timer (30 Min)")
+        popup.menu.add(0, 6, 5, "Sleep Timer (60 Min)")
+        popup.menu.add(0, 7, 6, "Sleep Timer (Manual)")
+        popup.menu.add(0, 8, 7, "Cancel Sleep Timer")
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -120,22 +121,26 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 3 -> {
-                    startSleepTimer(15 * 60 * 1000L, "15 Menit")
+                    showYoutubeLiveChatDialog()
                     true
                 }
                 4 -> {
-                    startSleepTimer(30 * 60 * 1000L, "30 Menit")
+                    startSleepTimer(15 * 60 * 1000L, "15 Menit")
                     true
                 }
                 5 -> {
-                    startSleepTimer(60 * 60 * 1000L, "60 Menit")
+                    startSleepTimer(30 * 60 * 1000L, "30 Menit")
                     true
                 }
                 6 -> {
-                    showManualSleepDialog()
+                    startSleepTimer(60 * 60 * 1000L, "60 Menit")
                     true
                 }
                 7 -> {
+                    showManualSleepDialog()
+                    true
+                }
+                8 -> {
                     cancelSleepTimer()
                     true
                 }
@@ -143,6 +148,53 @@ class MainActivity : AppCompatActivity() {
             }
         }
         popup.show()
+    }
+
+    private fun showYoutubeLiveChatDialog() {
+        val input = EditText(this)
+        input.hint = "Contoh: dQw4w9WgXcQ atau URL lengkap video"
+
+        AlertDialog.Builder(this)
+            .setTitle("Pop-up Live Chat YouTube")
+            .setMessage("Masukkan Video ID atau URL video YouTube Live:")
+            .setView(input)
+            .setPositiveButton("Buka Chat") { _, _ =>
+                val text = input.text.toString().trim()
+                if (text.isNotEmpty()) {
+                    val videoId = extractYouTubeId(text)
+                    if (videoId != null) {
+                        // URL Pop-up Live Chat resmi YouTube
+                        val chatUrl = "https://www.youtube.com/live_chat?v=$videoId&embed_domain=${webView.url?.let { android.net.Uri.parse(it).host } ?: "youtube.com"}"
+                        // Alternatif sederhana: webView.loadUrl("https://www.youtube.com/live_chat?v=$videoId")
+                        webView.loadUrl("https://www.youtube.com/live_chat?v=$videoId")
+                    } else {
+                        Toast.makeText(this, "Video ID tidak valid!", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(this, "Input tidak boleh kosong!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    private fun extractYouTubeId(urlOrId: String): String? {
+        if (urlOrId.length == 11 && !urlOrId.contains("/") && !urlOrId.contains(".")) {
+            return urlOrId
+        }
+        // Pola sederhana untuk URL YouTube
+        return try {
+            val uri = android.net.Uri.parse(urlOrId)
+            when {
+                uri.host?.contains("youtu.be") == true -> uri.lastPathSegment
+                uri.host?.contains("youtube.com") == true -> {
+                    uri.getQueryParameter("v") ?: uri.lastPathSegment
+                }
+                else -> null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private fun showManualSleepDialog() {
@@ -154,7 +206,7 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Sleep Timer Manual")
             .setMessage("Masukkan durasi tidur dalam menit:")
             .setView(input)
-            .setPositiveButton("Mulai") { _, _ ->
+            .setPositiveButton("Mulai") { _, _ =>
                 val valueStr = input.text.toString()
                 if (valueStr.isNotEmpty()) {
                     val minutes = valueStr.toLongOrNull()
@@ -164,7 +216,7 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this, "Masukkan angka yang valid!", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    Toast.makeText(this, "Input tidak boleh kosong!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Input tidak boleh kosong!", Toast.LENGTH_SHORT).is
                 }
             }
             .setNegativeButton("Batal", null)

@@ -5,14 +5,14 @@
     android:orientation="vertical"
     android:background="#121212">
 
-    <!-- Tombol Switch Platform di Atas -->
+    <!-- Menu Bar Atas: Tombol Platform + Tombol Menu Dropdown -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="#1E1E1E"
         android:padding="8dp"
-        android:gravity="center">
+        android:gravity="center_vertical">
 
         <Button
             android:id="@+id/btnYoutube"
@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="YouTube Live"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:layout_marginEnd="4dp" />
 
         <Button
@@ -29,7 +29,16 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Twitch Live"
-            android:textSize="14sp"
+            android:textSize="13sp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginStart="4dp" />
+
+        <Button
+            android:id="@+id/btnMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⋮ Menu"
+            android:textSize="13sp"
             android:layout_marginStart="4dp" />
     </LinearLayout>
 

@@ -235,31 +235,11 @@ class MainActivity : AppCompatActivity() {
     private fun openLiveChatPopupFromUrl(url: String) {
         val videoId = extractVideoId(url)
         if (videoId != null) {
-            val chatUrl = "https://www.youtube.com/live_chat?v=$videoId&embed_domain=youtube.com"
-            
-            // Buat dialog WebView untuk Pop-up Live Chat
-            val dialogWebView = WebView(this)
-            val ws = dialogWebView.settings
-            ws.javaScriptEnabled = true
-            ws.domStorageEnabled = true
-            ws.loadsImagesAutomatically = true
-            ws.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            
-            // User-agent mobile standar agar tampilan chat YouTube termuat sempurna
-            ws.userAgentString = "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
-
-            dialogWebView.webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                    return false
-                }
-            }
-            dialogWebView.loadUrl(chatUrl)
-
-            AlertDialog.Builder(this)
-                .setTitle("YouTube Live Chat (Pop-up)")
-                .setView(dialogWebView)
-                .setPositiveButton("Tutup", null)
-                .show()
+            // Langsung muat halaman tonton YouTube versi mobile/embed di WebView utama 
+            // agar komentar/live chat tampil normal tanpa diblokir kebijakan CORS/iframe YouTube.
+            val standardWatchUrl = "https://www.youtube.com/watch?v=$videoId"
+            webView.loadUrl(standardWatchUrl)
+            Toast.makeText(this, "Membuka video & chat di layar utama", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "Tidak dapat mendeteksi Video ID dari URL ini", Toast.LENGTH_SHORT).show()
         }

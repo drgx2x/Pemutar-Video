@@ -53,6 +53,7 @@ class MainActivity : AppCompatActivity() {
                     currentUrl = url
                     checkAndShowFloatingChat(url)
                     injectSponsorBlock()
+                    injectAdBlock(url)
                 }
             }
 
@@ -61,6 +62,7 @@ class MainActivity : AppCompatActivity() {
                     currentUrl = url
                     checkAndShowFloatingChat(url)
                     injectSponsorBlock()
+                    injectAdBlock(url)
                 }
                 return false
             }
@@ -342,5 +344,68 @@ class MainActivity : AppCompatActivity() {
         } else {
             super.onBackPressed()
         }
+    }
+
+    private var isAdBlockEnabled = true
+
+    private fun injectAdBlock(url: String) {
+        if (!isAdBlockEnabled) return
+
+        val jsCode = """
+            (function() {
+                if (window.__adBlockInjected) return;
+                window.__adBlockInjected = true;
+
+                const css = `
+                    /* YouTube Ad Elements Removal */
+                    ytd-promoted-sparkles-web-renderer,
+                    ytd-display-ad-renderer,
+                    ytd-compact-promoted-video-renderer,
+                    ytd-ad-slot-renderer,
+                    #player-ads,
+                    .video-ads.ytp-ad-module,
+                    .ytp-ad-overlay-image,
+                    .ytp-ad-text-overlay,
+                    tp-yt-paper-dialog:has(yt-mealbar-promo-renderer),
+                    /* Twitch Ad Elements Removal */
+                    .video--ad-banner,
+                    .ad-banner,
+                    [data-a-target="video-ad-label"],
+                    div[class*="ad-container"] {
+                        display: none !important;
+                        visibility: hidden !important;
+                        opacity: 0 !important;
+                        pointer-events: none !important;
+                    }
+                `;
+
+                const style = document.createElement('style');
+                style.type = 'text/css';
+                style.appendChild(document.createTextNode(css));
+                (document.head || document.documentElement).appendChild(style);
+
+                // Auto skip YouTube ads & speed up when ad is playing
+                setInterval(() => {
+                    const video = document.querySelector('video');
+                    const adOverlay = document.querySelector('.ad-showing, .ytp-ad-player-overlay');
+                    
+                    if (adOverlay && video) {
+                        video.playbackRate = 16.0;
+                        video.muted = true;
+                        
+                        const skipBtn = document.querySelector('.ytp-ad-skip-button, .ytp-ad-skip-button-modern, button.ytp-ad-skip-button');
+                        if (skipBtn) {
+                            skipBtn.click();
+                        } else {
+                            try {
+                                video.currentTime = video.duration || video.currentTime + 5;
+                            } catch (e) {}
+                        }
+                    }
+                }, 250);
+            })();
+        """.trimIndent()
+
+        webView.evaluateJavascript(jsCode, null)
     }
 }

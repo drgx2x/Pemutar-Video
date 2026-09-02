@@ -5,44 +5,24 @@
     android:orientation="vertical"
     android:background="#121212">
 
-    <!-- Menu Bar Atas: Tombol Platform + Tombol Menu Dropdown -->
+    <!-- Menu Bar Atas: Tombol Menu Dropdown -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="#1E1E1E"
-        android:padding="8dp"
-        android:gravity="center_vertical">
-
-        <Button
-            android:id="@+id/btnYoutube"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="YouTube Live"
-            android:textSize="13sp"
-            android:layout_marginEnd="4dp" />
-
-        <Button
-            android:id="@+id/btnTwitch"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Twitch Live"
-            android:textSize="13sp"
-            android:layout_marginEnd="4dp"
-            android:layout_marginStart="4dp" />
+        android:padding="12dp"
+        android:gravity="end">
 
         <Button
             android:id="@+id/btnMenu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="⋮ Menu"
-            android:textSize="13sp"
-            android:layout_marginStart="4dp" />
+            android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- WebView untuk Tampilan Live Stream & Chat -->
+    <!-- WebView untuk Tampilan Home Platform -->
     <WebView
         android:id="@+id/webView"
         android:layout_width="match_parent"

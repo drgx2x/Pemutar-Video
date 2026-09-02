@@ -18,10 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
-    private lateinit var btnYoutube: Button
-    private lateinit var btnTwitch: Button
     private lateinit var btnMenu: Button
-    private var currentPlatform = "youtube"
     private var sleepTimer: CountDownTimer? = null
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -32,8 +29,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         webView = findViewById(R.id.webView)
-        btnYoutube = findViewById(R.id.btnYoutube)
-        btnTwitch = findViewById(R.id.btnTwitch)
         btnMenu = findViewById(R.id.btnMenu)
 
         val webSettings: WebSettings = webView.settings
@@ -94,26 +89,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnYoutube.setOnClickListener {
-            loadYoutubeLive()
-        }
-
-        btnTwitch.setOnClickListener {
-            loadTwitchLive()
-        }
-
         btnMenu.setOnClickListener { view ->
             showPopupMenu(view)
         }
 
-        // Default buka YouTube Live Stream + Chat
-        loadYoutubeLive()
+        // Default buka Beranda YouTube
+        loadYoutubeHome()
     }
 
     private fun showPopupMenu(view: View) {
         val popup = PopupMenu(this, view)
-        popup.menu.add(0, 1, 0, "YouTube Live")
-        popup.menu.add(0, 2, 1, "Twitch Live")
+        popup.menu.add(0, 1, 0, "YouTube")
+        popup.menu.add(0, 2, 1, "Twitch")
         popup.menu.add(0, 3, 2, "Sleep Timer (15 Min)")
         popup.menu.add(0, 4, 3, "Sleep Timer (30 Min)")
         popup.menu.add(0, 5, 4, "Sleep Timer (60 Min)")
@@ -122,11 +109,11 @@ class MainActivity : AppCompatActivity() {
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 1 -> {
-                    loadYoutubeLive()
+                    loadYoutubeHome()
                     true
                 }
                 2 -> {
-                    loadTwitchLive()
+                    loadTwitchHome()
                     true
                 }
                 3 -> {
@@ -156,9 +143,7 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "Sleep timer diatur untuk $label", Toast.LENGTH_SHORT).show()
         
         sleepTimer = object : CountDownTimer(durationMillis, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                // Bisa tambahkan logic update jika perlu
-            }
+            override fun onTick(millisUntilFinished: Long) {}
 
             override fun onFinish() {
                 Toast.makeText(this@MainActivity, "Waktu tidur tercapai, menutup aplikasi...", Toast.LENGTH_LONG).show()
@@ -173,66 +158,12 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "Sleep timer dibatalkan", Toast.LENGTH_SHORT).show()
     }
 
-    private fun loadYoutubeLive() {
-        currentPlatform = "youtube"
-        btnYoutube.alpha = 1.0f
-        btnTwitch.alpha = 0.6f
-        
-        val youtubeHtml = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                    body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; display: flex; flex-direction: column; }
-                    #video-container { width: 100%; height: 60%; }
-                    #chat-container { width: 100%; height: 40%; background: #212121; }
-                    iframe { width: 100%; height: 100%; border: none; }
-                </style>
-            </head>
-            <body>
-                <div id="video-container">
-                    <iframe src="https://www.youtube.com/embed/live_stream?channel=UCBJycsmduvYEL83R_U4JriQ&autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-                <div id="chat-container">
-                    <iframe src="https://www.youtube.com/live_chat?v=live_stream&embed_domain=localhost"></iframe>
-                </div>
-            </body>
-            </html>
-        """.trimIndent()
-        webView.loadDataWithBaseURL("https://www.youtube.com", youtubeHtml, "text/html", "UTF-8", null)
+    private fun loadYoutubeHome() {
+        webView.loadUrl("https://www.youtube.com")
     }
 
-    private fun loadTwitchLive() {
-        currentPlatform = "twitch"
-        btnTwitch.alpha = 1.0f
-        btnYoutube.alpha = 0.6f
-
-        val twitchHtml = """
-            <!DOCTYPE html>
-            # stream { width: 100%; height: 60%; }
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                    body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; display: flex; flex-direction: column; }
-                    #stream { width: 100%; height: 60%; }
-                    #chat { width: 100%; height: 40%; background: #18181b; }
-                    iframe { width: 100%; height: 100%; border: none; }
-                </style>
-            </head>
-            <body>
-                <div id="stream">
-                    <iframe src="https://player.twitch.tv/?channel=monstercat&parent=127.0.0.1" allowfullscreen></iframe>
-                </div>
-                <div id="chat">
-                    <iframe src="https://www.twitch.tv/embed/monstercat/chat?parent=127.0.0.1" height="100%" width="100%"></iframe>
-                </div>
-            </body>
-            </html>
-        """.trimIndent()
-        webView.loadDataWithBaseURL("http://127.0.0.1", twitchHtml, "text/html", "UTF-8", null)
+    private fun loadTwitchHome() {
+        webView.loadUrl("https://www.twitch.tv")
     }
 
     override fun onBackPressed() {

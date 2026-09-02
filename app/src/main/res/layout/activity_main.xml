@@ -5,80 +5,35 @@
     android:orientation="vertical"
     android:background="#121212">
 
-    <!-- Container Kontrol Navigasi & Tombol Embed -->
+    <!-- Tombol Switch Platform di Atas -->
     <LinearLayout
-        android:id="@+id/navContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
+        android:background="#1E1E1E"
         android:padding="8dp"
-        android:background="#1E1E1E">
+        android:gravity="center">
 
-        <!-- Input URL & Tombol Muat -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/btnYoutube"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
+            android:layout_weight="1"
+            android:text="YouTube"
+            android:textSize="14sp"
+            android:layout_marginEnd="4dp" />
 
-            <EditText
-                android:id="@+id/urlInput"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Masukkan URL atau Web..."
-                android:textColor="#FFFFFF"
-                android:textColorHint="#AAAAAA"
-                android:textSize="14sp"
-                android:inputType="textUri"
-                android:padding="8dp" />
-
-            <Button
-                android:id="@+id/btnLoadUrl"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Buka"
-                android:textSize="12sp"
-                android:layout_marginStart="4dp"/>
-        </LinearLayout>
-
-        <!-- Tombol Pintasan Pemutar (Twitch, YouTube, Toggle UI) -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/btnTwitch"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <Button
-                android:id="@+id/btnTwitch"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Twitch"
-                android:textSize="12sp"
-                android:layout_marginEnd="4dp" />
-
-            <Button
-                android:id="@+id/btnYoutube"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="YouTube"
-                android:textSize="12sp"
-                android:layout_marginEnd="4dp" />
-
-            <Button
-                android:id="@+id/btnNativePlayer"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Sembunyikan"
-                android:textSize="12sp" />
-        </LinearLayout>
-
+            android:layout_weight="1"
+            android:text="Twitch"
+            android:textSize="14sp"
+            android:layout_marginStart="4dp" />
     </LinearLayout>
 
-    <!-- WebView untuk Player Utama -->
+    <!-- WebView untuk Halaman Utama Platform -->
     <WebView
         android:id="@+id/webView"
         android:layout_width="match_parent"

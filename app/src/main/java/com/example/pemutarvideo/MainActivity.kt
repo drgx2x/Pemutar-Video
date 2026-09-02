@@ -8,23 +8,26 @@ import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
+    private lateinit var btnYoutube: Button
+    private lateinit var btnTwitch: Button
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Memulai dalam orientasi potret (atau mengikuti pilihan user di home), TIDAK langsung landscape
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
-        setContentView(R.layout.activity_player)
+        setContentView(R.layout.activity_main)
 
         webView = findViewById(R.id.webView)
+        btnYoutube = findViewById(R.id.btnYoutube)
+        btnTwitch = findViewById(R.id.btnTwitch)
 
         val webSettings: WebSettings = webView.settings
         webSettings.javaScriptEnabled = true
@@ -34,7 +37,6 @@ class MainActivity : AppCompatActivity() {
 
         webView.webViewClient = WebViewClient()
         
-        // WebChromeClient menangani event fullscreen dari pemutar video YouTube/Twitch
         webView.webChromeClient = object : WebChromeClient() {
             private var customView: View? = null
             private var customViewCallback: CustomViewCallback? = null
@@ -51,7 +53,7 @@ class MainActivity : AppCompatActivity() {
                 originalSystemUiVisibility = window.decorView.systemUiVisibility
                 originalOrientation = requestedOrientation
 
-                // SAAT TOMBOL FULLSCREEN DIKLIK: Otomatis ubah ke LANDSCAPE dan Fullscreen
+                // Otomatis landscape saat tombol fullscreen pemutar diklik
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 
                 window.decorView.systemUiVisibility = (
@@ -64,7 +66,6 @@ class MainActivity : AppCompatActivity() {
                 )
 
                 webView.visibility = View.GONE
-                // Tambahkan custom view fullscreen ke layout utama
                 val decorView = window.decorView as FrameLayout
                 decorView.addView(customView, FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT,
@@ -78,7 +79,6 @@ class MainActivity : AppCompatActivity() {
                 decorView.removeView(customView)
                 customView = null
 
-                // KELUAR DARI FULLSCREEN: Kembalikan orientasi dan UI seperti semula
                 window.decorView.systemUiVisibility = originalSystemUiVisibility
                 requestedOrientation = originalOrientation
 
@@ -88,61 +88,36 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val platform = intent.getStringExtra("platform") ?: "youtube"
+        // Tombol switch platform di atas
+        btnYoutube.setOnClickListener {
+            loadPlatform("youtube")
+        }
 
+        btnTwitch.setOnClickListener {
+            loadPlatform("twitch")
+        }
+
+        // Default buka halaman utama YouTube (bukan pemutar langsung)
+        loadPlatform("youtube")
+    }
+
+    private fun loadPlatform(platform: String) {
         if (platform == "twitch") {
-            val twitchHtml = """
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; display: flex; flex-direction: column; }
-                        #stream { width: 100%; height: 60%; }
-                        #chat { width: 100%; height: 40%; background: #18181b; }
-                        iframe { width: 100%; height: 100%; border: none; }
-                    </style>
-                </head>
-                <body>
-                    <div id="stream">
-                        <iframe src="https://player.twitch.tv/?channel=monstercat&parent=localhost&parent=twitch.tv" allowfullscreen></iframe>
-                    </div>
-                    <div id="chat">
-                        <iframe src="https://www.twitch.tv/embed/monstercat/chat?parent=localhost&parent=twitch.tv" height="100%" width="100%"></iframe>
-                    </div>
-                </body>
-                </html>
-            """.trimIndent()
-            webView.loadDataWithBaseURL("https://www.twitch.tv", twitchHtml, "text/html", "UTF-8", null)
+            btnTwitch.alpha = 1.0f
+            btnYoutube.alpha = 0.6f
+            webView.loadUrl("https://www.twitch.tv")
         } else {
-            val youtubeHtml = """
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; display: flex; flex-direction: column; }
-                        #video-container { width: 100%; height: 60%; }
-                        #chat-container { width: 100%; height: 40%; background: #212121; }
-                        iframe { width: 100%; height: 100%; border: none; }
-                    </style>
-                </head>
-                <body>
-                    <div id="video-container">
-                        <iframe src="https://www.youtube.com/embed/live_stream?channel=UCBJycsmduvYEL83R_U4JriQ&autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                    </div>
-                    <div id="chat-container">
-                        <iframe src="https://www.youtube.com/live_chat?v=live_stream&embed_domain=localhost"></iframe>
-                    </div>
-                </body>
-                </html>
-            """.trimIndent()
-            webView.loadDataWithBaseURL("https://www.youtube.com", youtubeHtml, "text/html", "UTF-8", null)
+            btnYoutube.alpha = 1.0f
+            btnTwitch.alpha = 0.6f
+            webView.loadUrl("https://www.youtube.com")
         }
     }
 
     override fun onBackPressed() {
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        super.onBackPressed()
+        if (webView.canGoBack()) {
+            webView.goBack()
+        } else {
+            super.onBackPressed()
+        }
     }
 }

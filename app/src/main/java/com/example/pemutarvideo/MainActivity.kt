@@ -200,36 +200,43 @@ class MainActivity : AppCompatActivity() {
 
         val jsCode = """
             (function() {
-                if (window.__sponsorBlockInjected) return;
-                window.__sponsorBlockInjected = true;
-                
                 const videoId = '$videoId';
-                let segments = [];
+                if (window.__sponsorBlockVideoId === videoId) return;
+                window.__sponsorBlockVideoId = videoId;
+                window.__sponsorBlockSegments = [];
 
-                fetch('https://sponsor.ajg.app/api/skipSegments?videoID=' + videoId + '&categories=["sponsor","selfpromo","interaction"]')
-                    .then(res => res.json())
+                fetch('https://sponsor.ajay.app/api/skipSegments?videoID=' + videoId + '&categoryList=["sponsor","selfpromo","interaction","intro","outro"]')
+                    .then(res => {
+                        if (!res.ok) throw new Error("HTTP " + res.status);
+                        return res.json();
+                    })
                     .then(data => {
                         if (Array.isArray(data)) {
-                            segments = data.map(item => ({
+                            window.__sponsorBlockSegments = data.map(item => ({
                                 start: item.segment[0],
                                 end: item.segment[1]
                             }));
+                            console.log("[SponsorBlock] Loaded segments:", window.__sponsorBlockSegments);
                         }
                     }).catch(e => console.error("SponsorBlock fetch error:", e));
 
-                setInterval(() => {
-                    const video = document.querySelector('video');
-                    if (!video || segments.length === 0) return;
-                    
-                    const currentTime = video.currentTime;
-                    for (let seg of segments) {
-                        if (currentTime >= seg.start && currentTime < seg.end - 0.5) {
-                            video.currentTime = seg.end;
-                            console.log("[SponsorBlock] Skipped segment from " + seg.start + " to " + seg.end);
-                            break;
+                if (!window.__sponsorBlockIntervalStarted) {
+                    window.__sponsorBlockIntervalStarted = true;
+                    setInterval(() => {
+                        const video = document.querySelector('video');
+                        const segments = window.__sponsorBlockSegments;
+                        if (!video || !segments || segments.length === 0) return;
+                        
+                        const currentTime = video.currentTime;
+                        for (let seg of segments) {
+                            if (currentTime >= seg.start && currentTime < seg.end - 0.5) {
+                                video.currentTime = seg.end;
+                                console.log("[SponsorBlock] Skipped segment from " + seg.start + " to " + seg.end);
+                                break;
+                            }
                         }
-                    }
-                }, 1000);
+                    }, 500);
+                }
             })();
         """.trimIndent()
 
@@ -298,11 +305,23 @@ class MainActivity : AppCompatActivity() {
     private fun openLiveChatPopupFromUrl(url: String) {
         val videoId = extractVideoId(url)
         if (videoId != null) {
-            // Langsung muat halaman tonton YouTube versi mobile/embed di WebView utama 
-            // agar komentar/live chat tampil normal tanpa diblokir kebijakan CORS/iframe YouTube.
-            val standardWatchUrl = "https://www.youtube.com/watch?v=$videoId"
-            webView.loadUrl(standardWatchUrl)
-            Toast.makeText(this, "Membuka video & chat di layar utama", Toast.LENGTH_SHORT).show()
+            val liveChatUrl = "https://www.youtube.com/live_chat?v=$videoId&embed_domain=youtube.com"
+            
+            val dialogView = layoutInflater.inflate(R.layout.activity_player, null)
+            val chatWebView = dialogView.findViewById<WebView>(R.id.playerWebView)
+            
+            chatWebView.settings.javaScriptEnabled = true
+            chatWebView.settings.domStorageEnabled = true
+            chatWebView.webViewClient = WebViewClient()
+            chatWebView.loadUrl(liveChatUrl)
+
+            AlertDialog.Builder(this)
+                .setTitle("Live Chat & Komentar")
+                .setView(dialogView)
+                .setPositiveButton("Tutup", null)
+                .show()
+                
+            Toast.makeText(this, "Membuka popup live chat", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "Tidak dapat mendeteksi Video ID dari URL ini", Toast.LENGTH_SHORT).show()
         }

@@ -127,15 +127,6 @@ class MainActivity : AppCompatActivity() {
         loadYoutubeHome()
     }
 
-    private fun checkAndShowFloatingChat(url: String) {
-        // Cek apakah URL adalah halaman tonton YouTube (mengandung /watch?v= atau live)
-        if (url.contains("youtube.com/watch") || url.contains("youtu.be/")) {
-            btnFloatingChat.visibility = View.VISIBLE
-        } else {
-            btnFloatingChat.visibility = View.GONE
-        }
-    }
-
     private fun showPopupMenu(view: View) {
         val popup = PopupMenu(this, view)
         popup.menu.add(0, 1, 0, "YouTube")

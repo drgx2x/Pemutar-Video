@@ -73,9 +73,9 @@ while
     [ -h "$app_path" ]
 do
     ls=$( ls -ld "$app_path" )
-    link=${ls#*'" -> "'}
-    case $link in             #(\
-      /*)   app_path=$link ;; #(\
+    link=${ls#*' -> '}
+    case $link in             #(
+      /*)   app_path=$link ;; #(
       *)    app_path=$APP_HOME$link ;;
     esac
 done
@@ -100,15 +100,15 @@ die () {
     exit 1
 } >&2
 
-# OS specific support (must be "true" or "false").
+# OS specific support (must be 'true' or 'false').
 cygwin=false
 msys=false
 darwin=false
 nonstop=false
-case "$( uname )" in                #(\
-  CYGWIN* )         cygwin=true  ;; #(\
-  Darwin* )         darwin=true  ;; #(\
-  MSYS* | MINGW* )  msys=true    ;; #(\
+case "$( uname )" in                #(
+  CYGWIN* )         cygwin=true  ;; #(
+  Darwin* )         darwin=true  ;; #(
+  MSYS* | MINGW* )  msys=true    ;; #(
   NONSTOP* )        nonstop=true ;;
 esac
 
@@ -142,15 +142,15 @@ fi
 
 # Increase the maximum file descriptors if we can.
 if ! "$cygwin" && ! "$darwin" && ! "$nonstop" ; then
-    case $MAX_FD in #(\
+    case $MAX_FD in #(
       max*)
         # In POSIX sh, ulimit -H is undefined. That's why the result is checked to see if it worked.
         # shellcheck disable=SC2039,SC3045
         MAX_FD=$( ulimit -H -n ) ||
             warn "Could not query maximum file descriptor limit"
     esac
-    case $MAX_FD in  #(\
-      "" | soft) :;; #(\
+    case $MAX_FD in  #(
+      '' | soft) :;; #(
       *)
         # In POSIX sh, ulimit -n is undefined. That's why the result is checked to see if it worked.
         # shellcheck disable=SC2039,SC3045
@@ -177,10 +177,10 @@ if "$cygwin" || "$msys" ; then
     # Now convert the arguments - kludge to limit ourselves to /bin/sh
     for arg do
         if
-            case $arg in                                #(\
-              -*)   false ;;                            # don't mess with options #(\
+            case $arg in                                #(
+              -*)   false ;;                            # don't mess with options #(
               /?*)  t=${arg#/} t=/${t%%/*}              # looks like a POSIX filepath
-                    [ -e "$t" ] ;;                      #(\
+                    [ -e "$t" ] ;;                      #(
               *)    false ;;
             esac
         then
@@ -192,7 +192,7 @@ if "$cygwin" || "$msys" ; then
         #
         # NB: a `for` loop captures its iteration list before it begins, so
         # changing the positional parameters here affects neither the number of
-        # iterations, nor the values presented in `arg`.
+        # iterations, nor the values presented in `arg`protocol
         shift                   # remove old arg
         set -- "$@" "$arg"      # push replacement arg
     done
@@ -200,7 +200,7 @@ fi
 
 
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
-DEFAULT_JVM_OPTS='-Dfile.encoding=UTF-8 "-Xmx64m" "-Xms64m"'
+DEFAULT_JVM_OPTS='"-Dfile.encoding=UTF-8" "-Xmx64m" "-Xms64m"'
 
 # Collect all arguments for the java command:
 #   * DEFAULT_JVM_OPTS, JAVA_OPTS, JAVA_OPTS, and optsEnvironmentVar are not allowed to contain shell fragments,
@@ -240,10 +240,10 @@ fi
 #
 
 eval "set -- $(
-        printf '%s\\n' "$DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS" |
+        printf '%s\n' "$DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS" |
         xargs -n1 |
-        sed ' s~[^-[:alnum:]+,./:=@_]~\\\&~g; ' |
-        tr '\\n' ' '
+        sed ' s~[^-[:alnum:]+,./:=@_]~\&~g; ' |
+        tr '\n' ' '
     )" '"$@"'
 
 exec "$JAVACMD" "$@"

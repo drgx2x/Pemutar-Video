@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
                 if (url != null) {
                     currentUrl = url
                     checkAndShowFloatingChat(url)
+                    injectSponsorBlock()
                 }
             }
 
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity() {
                 if (url != null) {
                     currentUrl = url
                     checkAndShowFloatingChat(url)
+                    injectSponsorBlock()
                 }
                 return false
             }
@@ -148,6 +150,7 @@ class MainActivity : AppCompatActivity() {
         popup.menu.add(0, 2, 1, "Twitch")
         popup.menu.add(0, 3, 2, "Sleep Timer")
         popup.menu.add(0, 4, 3, "Cancel Sleep Timer")
+        popup.menu.add(0, 5, 4, "Toggle SponsorBlock")
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -167,10 +170,68 @@ class MainActivity : AppCompatActivity() {
                     cancelSleepTimer()
                     true
                 }
+                5 -> {
+                    toggleSponsorBlock()
+                    true
+                }
                 else -> false
             }
         }
         popup.show()
+    }
+
+    private var isSponsorBlockEnabled = true
+
+    private fun toggleSponsorBlock() {
+        isSponsorBlockEnabled = !isSponsorBlockEnabled
+        val status = if (isSponsorBlockEnabled) "Aktif" else "Nonaktif"
+        Toast.makeText(this, "SponsorBlock: $status", Toast.LENGTH_SHORT).show()
+        if (isSponsorBlockEnabled && currentUrl.contains("youtube.com/watch")) {
+            injectSponsorBlock()
+        }
+    }
+
+    private fun injectSponsorBlock() {
+        if (!isSponsorBlockEnabled) return
+        val videoId = extractVideoId(currentUrl)
+        if (videoId == null) return
+
+        val jsCode = """
+            (function() {
+                if (window.__sponsorBlockInjected) return;
+                window.__sponsorBlockInjected = true;
+                
+                const videoId = '$videoId';
+                let segments = [];
+
+                fetch('https://sponsor.ajg.app/api/skipSegments?videoID=' + videoId + '&categories=["sponsor","selfpromo","interaction"]')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (Array.isArray(data)) {
+                            segments = data.map(item => ({
+                                start: item.segment[0],
+                                end: item.segment[1]
+                            }));
+                        }
+                    }).catch(e => console.error("SponsorBlock fetch error:", e));
+
+                setInterval(() => {
+                    const video = document.querySelector('video');
+                    if (!video || segments.length === 0) return;
+                    
+                    const currentTime = video.currentTime;
+                    for (let seg of segments) {
+                        if (currentTime >= seg.start && currentTime < seg.end - 0.5) {
+                            video.currentTime = seg.end;
+                            console.log("[SponsorBlock] Skipped segment from " + seg.start + " to " + seg.end);
+                            break;
+                        }
+                    }
+                }, 1000);
+            })();
+        """.trimIndent()
+
+        webView.evaluateJavascript(jsCode, null)
     }
 
     private fun showSleepTimerOptionsDialog() {

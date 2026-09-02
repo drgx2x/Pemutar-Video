@@ -85,13 +85,6 @@ class MainActivity : AppCompatActivity() {
                 webView.visibility = View.VISIBLE
                 customViewCallback?.onCustomViewHidden()
                 customViewCallback = null
-
-                // Ketika keluar dari fullscreen, arahkan kembali ke beranda utama platform
-                if (currentPlatform == "twitch") {
-                    webView.loadUrl("https://www.twitch.tv")
-                } else {
-                    webView.loadUrl("https://www.youtube.com")
-                }
             }
         }
 
@@ -167,7 +160,7 @@ class MainActivity : AppCompatActivity() {
         webView.loadDataWithBaseURL("http://127.0.0.1", twitchHtml, "text/html", "UTF-8", null)
     }
 
-    override fun onBackPressed() {
+    private fun onBackPressed() {
         if (webView.canGoBack()) {
             webView.goBack()
         } else {

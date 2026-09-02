@@ -97,6 +97,17 @@ class MainActivity : AppCompatActivity() {
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.MATCH_PARENT
                 ))
+                
+                // Gunakan IMMERSIVE_STICKY agar status bar/nav bar muncul sejenak saat di-swipe lalu menghilang otomatis
+                window.decorView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                )
+                
                 customViewCallback = callback
             }
 
@@ -202,7 +213,15 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "Sleep timer diatur untuk $label", Toast.LENGTH_SHORT).show()
         
         sleepTimer = object : CountDownTimer(durationMillis, 1000) {
-            override fun onTick(millisUntilFinished: Long) {}
+            override fun onTick(millisUntilFinished: Long) {
+                val seconds = (millisUntilFinished / 1000) % 60
+                val minutes = (millisUntilFinished / (1000 * 60)) % 60
+                val hours = (millisUntilFinished / (1000 * 60 * 60))
+                val timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                
+                // Tampilkan waktu tersisa di title bar atau status bar (menggunakan title sementara)
+                title = "Sleep Timer: $timeString"
+            }
 
             override fun onFinish() {
                 Toast.makeText(this@MainActivity, "Waktu tidur tercapai, menutup aplikasi...", Toast.LENGTH_LONG).show()
@@ -214,6 +233,7 @@ class MainActivity : AppCompatActivity() {
     private fun cancelSleepTimer() {
         sleepTimer?.cancel()
         sleepTimer = null
+        title = getString(R.string.app_name)
         Toast.makeText(this, "Sleep timer dibatalkan", Toast.LENGTH_SHORT).show()
     }
 

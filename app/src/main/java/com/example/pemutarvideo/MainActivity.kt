@@ -1,6 +1,7 @@
 package com.example.pemutarvideo
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -10,6 +11,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -104,7 +106,8 @@ class MainActivity : AppCompatActivity() {
         popup.menu.add(0, 3, 2, "Sleep Timer (15 Min)")
         popup.menu.add(0, 4, 3, "Sleep Timer (30 Min)")
         popup.menu.add(0, 5, 4, "Sleep Timer (60 Min)")
-        popup.menu.add(0, 6, 5, "Cancel Sleep Timer")
+        popup.menu.add(0, 6, 5, "Sleep Timer (Manual)")
+        popup.menu.add(0, 7, 6, "Cancel Sleep Timer")
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -129,6 +132,10 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 6 -> {
+                    showManualSleepDialog()
+                    true
+                }
+                7 -> {
                     cancelSleepTimer()
                     true
                 }
@@ -136,6 +143,32 @@ class MainActivity : AppCompatActivity() {
             }
         }
         popup.show()
+    }
+
+    private fun showManualSleepDialog() {
+        val input = EditText(this)
+        input.hint = "Masukkan waktu dalam menit"
+        input.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+
+        AlertDialog.Builder(this)
+            .setTitle("Sleep Timer Manual")
+            .setMessage("Masukkan durasi tidur dalam menit:")
+            .setView(input)
+            .setPositiveButton("Mulai") { _, _ ->
+                val valueStr = input.text.toString()
+                if (valueStr.isNotEmpty()) {
+                    val minutes = valueStr.toLongOrNull()
+                    if (minutes != null && minutes > 0) {
+                        startSleepTimer(minutes * 60 * 1000L, "$minutes Menit")
+                    } else {
+                        Toast.makeText(this, "Masukkan angka yang valid!", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(this, "Input tidak boleh kosong!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     private fun startSleepTimer(durationMillis: Long, label: String) {

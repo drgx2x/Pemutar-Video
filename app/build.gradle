@@ -4,6 +4,7 @@ plugins {
 }
 
 android {
+    namespace 'com.example.pemutarvideo'
     compileSdkVersion 33
 
     defaultConfig {

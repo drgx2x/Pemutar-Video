@@ -49,7 +49,6 @@ class MainActivity : AppCompatActivity() {
                 super.onPageFinished(view, url)
                 if (url != null) {
                     currentUrl = url
-                    injectSponsorBlock()
                     injectAdBlock(url)
                 }
             }
@@ -57,7 +56,6 @@ class MainActivity : AppCompatActivity() {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 if (url != null) {
                     currentUrl = url
-                    injectSponsorBlock()
                     injectAdBlock(url)
                 }
                 return false
@@ -133,7 +131,6 @@ class MainActivity : AppCompatActivity() {
         popup.menu.add(0, 2, 1, "Twitch")
         popup.menu.add(0, 3, 2, "Sleep Timer")
         popup.menu.add(0, 4, 3, "Cancel Sleep Timer")
-        popup.menu.add(0, 5, 4, "Toggle SponsorBlock")
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -154,7 +151,6 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 5 -> {
-                    toggleSponsorBlock()
                     true
                 }
                 else -> false
@@ -163,75 +159,9 @@ class MainActivity : AppCompatActivity() {
         popup.show()
     }
 
-    private var isSponsorBlockEnabled = true
 
-    private fun toggleSponsorBlock() {
-        isSponsorBlockEnabled = !isSponsorBlockEnabled
-        val status = if (isSponsorBlockEnabled) "Aktif" else "Nonaktif"
-        Toast.makeText(this, "SponsorBlock: $status", Toast.LENGTH_SHORT).show()
-        if (isSponsorBlockEnabled && currentUrl.contains("youtube.com/watch")) {
-            injectSponsorBlock()
-        }
     }
 
-    private fun injectSponsorBlock() {
-        if (!isSponsorBlockEnabled) return
-        val videoId = extractVideoId(currentUrl)
-        if (videoId == null) return
-
-        val jsCode = """
-            (function() {
-                const videoId = '$videoId';
-                if (window.__sponsorBlockVideoId !== videoId) {
-                    window.__sponsorBlockVideoId = videoId;
-                    window.__sponsorBlockSegments = [];
-
-                    fetch('https://sponsor.ajay.app/api/skipSegments?videoID=' + videoId + '&categoryList=["sponsor","selfpromo","interaction","intro","outro"]')
-                        .then(res => {
-                            if (!res.ok) throw new Error("HTTP " + res.status);
-                            return res.json();
-                        })
-                        .then(data => {
-                            if (Array.isArray(data)) {
-                                window.__sponsorBlockSegments = data.map(item => ({
-                                    start: item.segment[0],
-                                    end: item.segment[1]
-                                }));
-                                console.log("[SponsorBlock] Loaded segments:", window.__sponsorBlockSegments);
-                            }
-                        }).catch(e => console.error("SponsorBlock fetch error:", e));
-                }
-
-                if (!window.__sponsorBlockObserverStarted) {
-                    window.__sponsorBlockObserverStarted = true;
-                    
-                    const observer = new MutationObserver(() => {
-                        const video = document.querySelector('video');
-                        if (video && !video.__sponsorBlockListenerAttached) {
-                            video.__sponsorBlockListenerAttached = true;
-                            video.addEventListener('timeupdate', () => {
-                                const segments = window.__sponsorBlockSegments;
-                                if (!segments || segments.length === 0) return;
-                                
-                                const currentTime = video.currentTime;
-                                for (let seg of segments) {
-                                    if (currentTime >= seg.start && currentTime < seg.end - 0.5) {
-                                        video.currentTime = seg.end;
-                                        console.log("[SponsorBlock] Skipped segment from " + seg.start + " to " + seg.end);
-                                        break;
-                                    }
-                                }
-                            });
-                        }
-                    });
-                    
-                    observer.observe(document.body, { childList: true, subtree: true });
-                }
-            })();
-        """.trimIndent()
-
-        webView.evaluateJavascript(jsCode, null)
-    }
 
     private fun showSleepTimerOptionsDialog() {
         val options = arrayOf("15 Menit", "30 Menit", "60 Menit", "Manual (Custom Menit)")

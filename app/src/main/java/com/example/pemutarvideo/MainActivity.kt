@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                 webView.visibility = View.GONE
                 
                 // Tambahkan ini agar layar tetap menyala saat fullscreen
-                webView.keepScreenOn = true
+                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
                 val decorView = window.decorView as FrameLayout
                 decorView.addView(customView, FrameLayout.LayoutParams(
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity() {
                 customView = null
                 
                 // Matikan keepScreenOn saat keluar dari fullscreen
-                webView.keepScreenOn = false
+                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
                 window.decorView.systemUiVisibility = originalSystemUiVisibility
                 requestedOrientation = originalOrientation

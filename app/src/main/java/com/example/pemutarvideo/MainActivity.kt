@@ -93,6 +93,9 @@ class MainActivity : AppCompatActivity() {
                 // Sembunyikan topbar dan webView utama, tampilkan customView (fullscreen video) di root layout
                 findViewById<View>(R.id.layoutTopBar).visibility = View.GONE
                 webView.visibility = View.GONE
+                
+                // Tambahkan ini agar layar tetap menyala saat fullscreen
+                webView.keepScreenOn = true
 
                 val decorView = window.decorView as FrameLayout
                 decorView.addView(customView, FrameLayout.LayoutParams(
@@ -117,6 +120,9 @@ class MainActivity : AppCompatActivity() {
                 val decorView = window.decorView as FrameLayout
                 decorView.removeView(customView)
                 customView = null
+                
+                // Matikan keepScreenOn saat keluar dari fullscreen
+                webView.keepScreenOn = false
 
                 window.decorView.systemUiVisibility = originalSystemUiVisibility
                 requestedOrientation = originalOrientation

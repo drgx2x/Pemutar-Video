@@ -149,6 +149,7 @@ class MainActivity : AppCompatActivity() {
         popup.menu.add(0, 2, 1, "Twitch")
         popup.menu.add(0, 3, 2, "Sleep Timer")
         popup.menu.add(0, 4, 3, "Cancel Sleep Timer")
+        popup.menu.add(0, 5, 4, "Exit")
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -169,6 +170,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 5 -> {
+                    finish()
                     true
                 }
                 else -> false
